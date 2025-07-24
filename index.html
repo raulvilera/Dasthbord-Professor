@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Respostas - Quiz de Mitose</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2d388a, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(178, 31, 31, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(26, 42, 108, 0.2) 0%, transparent 25%);
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0 30px;
+            position: relative;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo i {
+            font-size: 40px;
+            color: #1a2a6c;
+        }
+        
+        h1 {
+            font-size: 2.3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #ff9a9e, #fad0c4, #a1c4fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #e0e0ff;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+        
+        .tab-btn {
+            padding: 12px 25px;
+            background: rgba(0, 0, 30, 0.6);
+            border: none;
+            border-radius: 30px;
+            color: #e0e0ff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1a2a6c, #3a4aac);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tab-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 30, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0ff;
+            font-size: 0.9rem;
+        }
+        
+        .filter-select {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #3a4aac;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .filter-select option {
+            background: #1a2a6c;
+            padding: 5px;
+        }
+        
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 0, 30, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ffcc00;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #a0a0ff;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-card {
+            background: rgba(0, 0, 30, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chart-title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #ffcc00;
+            font-size: 1.2rem;
+        }
+        
+        .responses-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 30, 0.6);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .responses-table th {
+            background: linear-gradient(135deg, #1a2a6c, #3a4aac);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .responses-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .responses-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .responses-table tr:hover {
+            background: rgba(58, 74, 172, 0.3);
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1a2a6c, #3a4aac);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #8c95ad);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(2px);
+        }
+        
+        .floating-cells {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            animation: float 15s infinite linear;
+            z-index: -1;
+        }
+        
+        .floating-cells:nth-child(1) {
+            top: 10%;
+            left: 5%;
+            width: 80px;
+            height: 80px;
+            animation-duration: 20s;
+        }
+        
+        .floating-cells:nth-child(2) {
+            top: 20%;
+            right: 10%;
+            width: 120px;
+            height: 120px;
+            animation-duration: 25s;
+        }
+        
+        .floating-cells:nth-child(3) {
+            bottom: 15%;
+            left: 15%;
+            width: 90px;
+            height: 90px;
+            animation-duration: 18s;
+        }
+        
+        .floating-cells:nth-child(4) {
+            bottom: 25%;
+            right: 5%;
+            width: 70px;
+            height: 70px;
+            animation-duration: 22s;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(20px, 20px) rotate(90deg);
+            }
+            50% {
+                transform: translate(0, 40px) rotate(180deg);
+            }
+            75% {
+                transform: translate(-20px, 20px) rotate(270deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+        
+        .student-list {
+            background: rgba(0, 0, 30, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .student-list h3 {
+            margin-bottom: 15px;
+            color: #ffcc00;
+            text-align: center;
+        }
+        
+        .students-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .student-card {
+            background: rgba(58, 74, 172, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .student-card:hover {
+            background: rgba(58, 74, 172, 0.5);
+            transform: translateY(-3px);
+        }
+        
+        .student-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .student-class {
+            font-size: 0.9rem;
+            color: #a0a0ff;
+        }
+        
+        .analysis-section {
+            background: rgba(0, 0, 30, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #ffcc00;
+            font-size: 1.3rem;
+        }
+        
+        .topic-card {
+            background: rgba(58, 74, 172, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ffcc00;
+        }
+        
+        .topic-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffcc00;
+        }
+        
+        .recommendation {
+            padding: 15px;
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .weak-area {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: rgba(178, 31, 31, 0.2);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .weak-area i {
+            color: #b21f1f;
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Elementos flutuantes decorativos -->
+    <div class="floating-cells"></div>
+    <div class="floating-cells"></div>
+    <div class="floating-cells"></div>
+    <div class="floating-cells"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1>Dashboard de Respostas - Mitose</h1>
+            <p class="subtitle">Análise detalhada das respostas dos alunos e áreas que precisam de reforço</p>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+                <button class="tab-btn" data-tab="students">Lista de Alunos</button>
+                <button class="tab-btn" data-tab="responses">Respostas Detalhadas</button>
+                <button class="tab-btn" data-tab="analysis">Análise Pedagógica</button>
+            </div>
+        </header>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label class="filter-label">Filtrar por Série:</label>
+                <select id="filter-class" class="filter-select">
+                    <option value="all">Todas as Séries</option>
+                    <option value="9A">9º Ano A</option>
+                    <option value="9B">9º Ano B</option>
+                    <option value="9C">9º Ano C</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Filtrar por Aluno:</label>
+                <select id="filter-student" class="filter-select">
+                    <option value="all">Todos os Alunos</option>
+                    <!-- Os alunos serão preenchidos por JavaScript -->
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Ordenar por:</label>
+                <select id="sort-by" class="filter-select">
+                    <option value="name">Nome do Aluno</option>
+                    <option value="class">Série</option>
+                    <option value="score">Pontuação</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Conteúdo do Dashboard -->
+        <div id="dashboard-tab" class="tab-content active">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total de Alunos</div>
+                    <div class="stat-value" id="total-students">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Média de Pontuação</div>
+                    <div class="stat-value" id="average-score">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Questão Mais Difícil</div>
+                    <div class="stat-value" id="hardest-question">Q10</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Tópico Mais Problemático</div>
+                    <div class="stat-value" id="weakest-topic">Citocinese</div>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3 class="chart-title">Distribuição de Pontuações por Série</h3>
+                    <canvas id="score-chart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <h3 class="chart-title">Taxa de Acerto por Questão</h3>
+                    <canvas id="question-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">Questões com Menor Taxa de Acerto</h3>
+                <canvas id="weak-questions-chart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Lista de Alunos -->
+        <div id="students-tab" class="tab-content">
+            <div class="student-list">
+                <h3>Alunos do 9º Ano A</h3>
+                <div class="students-container" id="class-9a">
+                    <!-- Alunos serão preenchidos por JavaScript -->
+                </div>
+            </div>
+            
+            <div class="student-list">
+                <h3>Alunos do 9º Ano B</h3>
+                <div class="students-container" id="class-9b">
+                    <!-- Alunos serão preenchidos por JavaScript -->
+                </div>
+            </div>
+            
+            <div class="student-list">
+                <h3>Alunos do 9º Ano C</h3>
+                <div class="students-container" id="class-9c">
+                    <!-- Alunos serão preenchidos por JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Respostas Detalhadas -->
+        <div id="responses-tab" class="tab-content">
+            <table class="responses-table">
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Série</th>
+                        <th>Questão</th>
+                        <th>Resposta</th>
+                        <th>Correta</th>
+                        <th>Pontos</th>
+                    </tr>
+                </thead>
+                <tbody id="responses-table-body">
+                    <!-- As respostas serão preenchidas por JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Análise Pedagógica -->
+        <div id="analysis-tab" class="tab-content">
+            <div class="analysis-section">
+                <div class="analysis-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>Áreas que Precisam de Reforço</h3>
+                </div>
+                
+                <div class="topic-card">
+                    <div class="topic-title">Citocinese em Células Vegetais</div>
+                    <p>Taxa de acerto: 45%</p>
+                    <p>Os alunos demonstraram dificuldade em entender como ocorre a citocinese em células vegetais, confundindo com o processo em células animais.</p>
+                    
+                    <div class="recommendation">
+                        <strong>Recomendações:</strong>
+                        <ul>
+                            <li>Realizar demonstração prática com modelos celulares</li>
+                            <li>Exibir vídeo explicativo mostrando o processo em tempo real</li>
+                            <li>Destacar as diferenças entre citocinese animal e vegetal em aula</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="weak-area">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>Questões com maior índice de erro: 8, 12</div>
+                    </div>
+                </div>
+                
+                <div class="topic-card">
+                    <div class="topic-title">Fases da Mitose</div>
+                    <p>Taxa de acerto: 52%</p>
+                    <p>Os alunos apresentam dificuldade em identificar corretamente as fases da mitose e suas características específicas.</p>
+                    
+                    <div class="recommendation">
+                        <strong>Recomendações:</strong>
+                        <ul>
+                            <li>Utilizar mnemônicos para memorização das fases</li>
+                            <li>Realizar atividade de ordenação das fases com imagens</li>
+                            <li>Criar um jogo interativo para identificação das fases</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="weak-area">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>Questões com maior índice de erro: 3, 4, 7</div>
+                    </div>
+                </div>
+                
+                <div class="topic-card">
+                    <div class="topic-title">Fase S da Interfase</div>
+                    <p>Taxa de acerto: 58%</p>
+                    <p>Os alunos confundem a fase S com outras fases do ciclo celular, especialmente com a fase G2.</p>
+                    
+                    <div class="recommendation">
+                        <strong>Recomendações:</strong>
+                        <ul>
+                            <li>Enfatizar a importância da duplicação do DNA na fase S</li>
+                            <li>Realizar analogia com processo de cópia de informações</li>
+                            <li>Criar diagrama comparativo das fases do ciclo celular</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="weak-area">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>Questões com maior índice de erro: 2, 9, 15</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">Desempenho por Tópico</h3>
+                <canvas id="topic-performance-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para carregar respostas do localStorage
+        function loadResponses() {
+            return JSON.parse(localStorage.getItem('quizMitoseResultados')) || [];
+        }
+        
+        // Dados das respostas
+        let allResponses = loadResponses();
+        
+        // Dados dos tópicos por questão
+        const questionTopics = {
+            1: "Ciclo Celular",
+            2: "Fase S",
+            3: "Fases da Mitose",
+            4: "Anáfase",
+            5: "Função da Mitose",
+            6: "Tipos de Células",
+            7: "Telófase",
+            8: "Citocinese",
+            9: "Fase S",
+            10: "Metáfase",
+            11: "Fusos Mitóticos",
+            12: "Citocinese",
+            13: "Importância da Mitose",
+            14: "Anáfase",
+            15: "Ciclo Celular"
+        };
+        
+        // Popular o seletor de alunos
+        function populateStudentSelect() {
+            const filterStudent = document.getElementById('filter-student');
+            filterStudent.innerHTML = '<option value="all">Todos os Alunos</option>';
+            
+            // Coletar todos os alunos únicos
+            const alunos = [...new Set(allResponses.map(r => r.aluno))];
+            alunos.forEach(aluno => {
+                const option = document.createElement('option');
+                option.value = aluno;
+                option.textContent = aluno;
+                filterStudent.appendChild(option);
+            });
+        }
+        
+        // Popular as listas de alunos
+        function populateStudentLists() {
+            const classes = {
+                "9A": document.getElementById('class-9a'),
+                "9B": document.getElementById('class-9b'),
+                "9C": document.getElementById('class-9c')
+            };
+            
+            // Limpar containers
+            for (const cls in classes) {
+                classes[cls].innerHTML = '';
+            }
+            
+            // Agrupar alunos por turma
+            const alunosPorTurma = {};
+            allResponses.forEach(response => {
+                if (!alunosPorTurma[response.turma]) {
+                    alunosPorTurma[response.turma] = [];
+                }
+                if (!alunosPorTurma[response.turma].includes(response.aluno)) {
+                    alunosPorTurma[response.turma].push(response.aluno);
+                }
+            });
+            
+            // Preencher as listas
+            for (const turma in alunosPorTurma) {
+                const container = classes[turma];
+                if (container) {
+                    alunosPorTurma[turma].forEach(aluno => {
+                        const card = document.createElement('div');
+                        card.className = 'student-card';
+                        card.innerHTML = `
+                            <div class="student-name">${aluno}</div>
+                            <div class="student-class">${turma}</div>
+                        `;
+                        container.appendChild(card);
+                    });
+                }
+            }
+        }
+        
+        // Filtrar e classificar respostas
+        function filterAndSortResponses() {
+            const selectedClass = document.getElementById('filter-class').value;
+            const selectedStudent = document.getElementById('filter-student').value;
+            const sortField = document.getElementById('sort-by').value;
+            
+            let filtered = [...allResponses];
+            
+            // Aplicar filtros
+            if (selectedClass !== 'all') {
+                filtered = filtered.filter(r => r.turma === selectedClass);
+            }
+            
+            if (selectedStudent !== 'all') {
+                filtered = filtered.filter(r => r.aluno === selectedStudent);
+            }
+            
+            // Aplicar ordenação
+            filtered.sort((a, b) => {
+                if (sortField === 'name') {
+                    return a.aluno.localeCompare(b.aluno);
+                } else if (sortField === 'class') {
+                    return a.turma.localeCompare(b.turma);
+                } else if (sortField === 'score') {
+                    return b.pontuacao - a.pontuacao;
+                }
+                return 0;
+            });
+            
+            return filtered;
+        }
+        
+        // Atualizar estatísticas
+        function updateStats() {
+            const filtered = filterAndSortResponses();
+            
+            // Calcular estatísticas
+            const totalStudents = filtered.length;
+            const totalScore = filtered.reduce((sum, r) => sum + r.pontuacao, 0);
+            const averageScore = totalStudents > 0 ? (totalScore / totalStudents).toFixed(1) : 0;
+            
+            // Encontrar a questão mais difícil
+            let questionStats = Array(15).fill(0).map(() => ({correct: 0, total: 0}));
+            
+            filtered.forEach(student => {
+                student.respostas.forEach((resp, idx) => {
+                    if (resp.tipo === 'mc' && resp.correta) {
+                        questionStats[idx].correct++;
+                    }
+                    if (resp.tipo === 'mc') {
+                        questionStats[idx].total++;
+                    }
+                });
+            });
+            
+            // Encontrar a questão com menor taxa de acerto
+            let minRate = 100;
+            let hardestQuestion = 1;
+            
+            questionStats.forEach((q, idx) => {
+                if (q.total > 0) {
+                    const rate = (q.correct / q.total) * 100;
+                    if (rate < minRate) {
+                        minRate = rate;
+                        hardestQuestion = idx + 1;
+                    }
+                }
+            });
+            
+            // Encontrar tópico mais problemático
+            const topicStats = {};
+            filtered.forEach(student => {
+                student.respostas.forEach(resp => {
+                    if (resp.tipo === 'mc') {
+                        const topic = questionTopics[resp.questao];
+                        if (!topicStats[topic]) {
+                            topicStats[topic] = {correct: 0, total: 0};
+                        }
+                        if (resp.correta) {
+                            topicStats[topic].correct++;
+                        }
+                        topicStats[topic].total++;
+                    }
+                });
+            });
+            
+            let weakestTopic = "";
+            let minTopicRate = 100;
+            
+            for (const topic in topicStats) {
+                const rate = (topicStats[topic].correct / topicStats[topic].total) * 100;
+                if (rate < minTopicRate) {
+                    minTopicRate = rate;
+                    weakestTopic = topic;
+                }
+            }
+            
+            // Atualizar elementos
+            document.getElementById('total-students').textContent = totalStudents;
+            document.getElementById('average-score').textContent = averageScore;
+            document.getElementById('hardest-question').textContent = `Q${hardestQuestion}`;
+            document.getElementById('weakest-topic').textContent = weakestTopic;
+            
+            return {filtered, questionStats, topicStats};
+        }
+        
+        // Atualizar gráficos
+        function updateCharts(stats) {
+            const filteredResponses = stats.filtered;
+            const questionStats = stats.questionStats;
+            const topicStats = stats.topicStats;
+            
+            const totalStudents = filteredResponses.length;
+            
+            // Gráfico de distribuição de pontuações por série
+            const scoreData = {
+                '9A': [],
+                '9B': [],
+                '9C': []
+            };
+            
+            filteredResponses.forEach(r => {
+                if (scoreData[r.turma]) {
+                    scoreData[r.turma].push(r.pontuacao);
+                }
+            });
+            
+            const scoreChart = new Chart(document.getElementById('score-chart'), {
+                type: 'bar',
+                data: {
+                    labels: ['9º Ano A', '9º Ano B', '9º Ano C'],
+                    datasets: [{
+                        label: 'Pontuação Média',
+                        data: [
+                            scoreData['9A'].length > 0 ? (scoreData['9A'].reduce((a, b) => a + b, 0) / scoreData['9A'].length).toFixed(1) : 0,
+                            scoreData['9B'].length > 0 ? (scoreData['9B'].reduce((a, b) => a + b, 0) / scoreData['9B'].length).toFixed(1) : 0,
+                            scoreData['9C'].length > 0 ? (scoreData['9C'].reduce((a, b) => a + b, 0) / scoreData['9C'].length).toFixed(1) : 0
+                        ],
+                        backgroundColor: ['#ff9a9e', '#a1c4fd', '#c2e9fb'],
+                        borderColor: ['#ff9a9e', '#a1c4fd', '#c2e9fb'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 30,
+                            ticks: {
+                                color: '#e0e0ff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e0e0ff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0ff'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de taxa de acerto por questão
+            const questionData = Array(15).fill(0);
+            
+            filteredResponses.forEach(student => {
+                student.respostas.forEach((resp, idx) => {
+                    if (resp.tipo === 'mc' && resp.correta) {
+                        questionData[idx]++;
+                    }
+                });
+            });
+            
+            const questionChart = new Chart(document.getElementById('question-chart'), {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 15}, (_, i) => `Q${i+1}`),
+                    datasets: [{
+                        label: '% de Acertos',
+                        data: questionData.map((count, idx) => {
+                            const total = filteredResponses.filter(s => s.respostas[idx].tipo === 'mc').length;
+                            return total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                        }),
+                        fill: true,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                color: '#e0e0ff',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e0e0ff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0ff'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de questões com menor taxa de acerto
+            const weakQuestions = questionStats
+                .map((q, idx) => ({
+                    question: `Q${idx+1}`,
+                    rate: q.total > 0 ? (q.correct / q.total) * 100 : 0
+                }))
+                .sort((a, b) => a.rate - b.rate)
+                .slice(0, 5);
+            
+            const weakQuestionsChart = new Chart(document.getElementById('weak-questions-chart'), {
+                type: 'bar',
+                data: {
+                    labels: weakQuestions.map(q => q.question),
+                    datasets: [{
+                        label: '% de Acerto',
+                        data: weakQuestions.map(q => q.rate.toFixed(1)),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(54, 162, 235, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 159, 64)',
+                            'rgb(255, 205, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(54, 162, 235)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#e0e0ff',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e0e0ff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0ff'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de desempenho por tópico
+            const topicLabels = [];
+            const topicData = [];
+            
+            for (const topic in topicStats) {
+                topicLabels.push(topic);
+                topicData.push((topicStats[topic].correct / topicStats[topic].total) * 100);
+            }
+            
+            const topicChart = new Chart(document.getElementById('topic-performance-chart'), {
+                type: 'radar',
+                data: {
+                    labels: topicLabels,
+                    datasets: [{
+                        label: 'Taxa de Acerto',
+                        data: topicData,
+                        fill: true,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgb(75, 192, 192)',
+                        pointBackgroundColor: 'rgb(75, 192, 192)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(75, 192, 192)'
+                    }]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                color: '#e0e0ff',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#e0e0ff'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0ff'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            return [scoreChart, questionChart, weakQuestionsChart, topicChart];
+        }
+        
+        // Atualizar tabela de respostas
+        function updateResponsesTable() {
+            const filtered = filterAndSortResponses();
+            const tableBody = document.getElementById('responses-table-body');
+            tableBody.innerHTML = '';
+            
+            filtered.forEach(student => {
+                student.respostas.forEach((resp, idx) => {
+                    const row = document.createElement('tr');
+                    let respostaTexto = "";
+                    let correta = "";
+                    let pontos = 0;
+                    
+                    if (resp.tipo === 'mc') {
+                        respostaTexto = quizData[idx].options[resp.resposta];
+                        correta = resp.correta ? '✅' : '❌';
+                        pontos = resp.correta ? (idx < 8 ? 1 : 2) : 0;
+                    } else {
+                        respostaTexto = resp.resposta;
+                        correta = "N/A";
+                        pontos = 0; // Não pontuamos questões discursivas automaticamente
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${student.aluno}</td>
+                        <td>${student.serie}</td>
+                        <td>Questão ${resp.questao}</td>
+                        <td>${respostaTexto}</td>
+                        <td>${correta}</td>
+                        <td>${pontos}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+        
+        // Atualizar todo o dashboard
+        function updateDashboard() {
+            const stats = updateStats();
+            updateCharts(stats);
+            updateResponsesTable();
+        }
+        
+        // Event listeners
+        const filterClass = document.getElementById('filter-class');
+        const filterStudent = document.getElementById('filter-student');
+        const sortBy = document.getElementById('sort-by');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        
+        filterClass.addEventListener('change', updateDashboard);
+        filterStudent.addEventListener('change', updateDashboard);
+        sortBy.addEventListener('change', updateDashboard);
+        
+        // Trocar de aba
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remover classe ativa de todos os botões e conteúdos
+                tabBtns.forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Adicionar classe ativa ao botão e conteúdo clicado
+                btn.classList.add('active');
+                document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
+                
+                updateDashboard();
+            });
+        });
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            populateStudentSelect();
+            populateStudentLists();
+            updateDashboard();
+        });
+    </script>
+</body>
+</html>
