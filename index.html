@@ -540,7 +540,7 @@
             </div>
             
             <div class="chart-card">
-                <h3 class="chart-title">Questões com Menor Taxa de Acerto</h3>
+                <h3 class="chart-title">Taxa de Acerto por Questão (Todas)</h3>
                 <canvas id="weak-questions-chart"></canvas>
             </div>
         </div>
@@ -1087,41 +1087,67 @@
                 }
             });
             
-            // Gráfico de questões com menor taxa de acerto
-            const weakQuestions = questionStats
+            // Gráfico de questões com menor taxa de acerto (TODAS AS 15 QUESTÕES)
+            const allQuestions = questionStats
                 .map((q, idx) => ({
                     question: `Q${idx+1}`,
                     rate: q.total > 0 ? (q.correct / q.total) * 100 : 0
                 }))
-                .sort((a, b) => a.rate - b.rate)
-                .slice(0, 5);
-            
+                .sort((a, b) => a.rate - b.rate); // Ordenar da menor para maior taxa
+
             const weakQuestionsChart = new Chart(document.getElementById('weak-questions-chart'), {
                 type: 'bar',
                 data: {
-                    labels: weakQuestions.map(q => q.question),
+                    labels: allQuestions.map(q => q.question),
                     datasets: [{
                         label: '% de Acerto',
-                        data: weakQuestions.map(q => q.rate.toFixed(1)),
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(255, 159, 64, 0.7)',
-                            'rgba(255, 205, 86, 0.7)',
-                            'rgba(75, 192, 192, 0.7)',
-                            'rgba(54, 162, 235, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(255, 99, 132)',
-                            'rgb(255, 159, 64)',
-                            'rgb(255, 205, 86)',
-                            'rgb(75, 192, 192)',
-                            'rgb(54, 162, 235)'
-                        ],
+                        data: allQuestions.map(q => q.rate.toFixed(1)),
+                        backgroundColor: allQuestions.map((_, index) => {
+                            const colors = [
+                                'rgba(255, 99, 132, 0.7)',    // Vermelho - piores
+                                'rgba(255, 159, 64, 0.7)',     // Laranja
+                                'rgba(255, 205, 86, 0.7)',     // Amarelo
+                                'rgba(75, 192, 192, 0.7)',     // Verde-água
+                                'rgba(54, 162, 235, 0.7)',     // Azul
+                                'rgba(153, 102, 255, 0.7)',    // Roxo
+                                'rgba(201, 203, 207, 0.7)',    // Cinza
+                                'rgba(255, 99, 132, 0.5)',     // Vermelho claro
+                                'rgba(255, 159, 64, 0.5)',     // Laranja claro
+                                'rgba(255, 205, 86, 0.5)',     // Amarelo claro
+                                'rgba(75, 192, 192, 0.5)',     // Verde-água claro
+                                'rgba(54, 162, 235, 0.5)',     // Azul claro
+                                'rgba(153, 102, 255, 0.5)',    // Roxo claro
+                                'rgba(201, 203, 207, 0.5)',    // Cinza claro
+                                'rgba(100, 100, 100, 0.5)'     // Cinza médio
+                            ];
+                            return colors[index] || 'rgba(150, 150, 150, 0.5)';
+                        }),
+                        borderColor: allQuestions.map((_, index) => {
+                            const colors = [
+                                'rgb(255, 99, 132)',
+                                'rgb(255, 159, 64)',
+                                'rgb(255, 205, 86)',
+                                'rgb(75, 192, 192)',
+                                'rgb(54, 162, 235)',
+                                'rgb(153, 102, 255)',
+                                'rgb(201, 203, 207)',
+                                'rgb(255, 99, 132)',
+                                'rgb(255, 159, 64)',
+                                'rgb(255, 205, 86)',
+                                'rgb(75, 192, 192)',
+                                'rgb(54, 162, 235)',
+                                'rgb(153, 102, 255)',
+                                'rgb(201, 203, 207)',
+                                'rgb(100, 100, 100)'
+                            ];
+                            return colors[index] || 'rgb(150, 150, 150)';
+                        }),
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
+                    indexAxis: 'x',
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -1138,7 +1164,10 @@
                         },
                         x: {
                             ticks: {
-                                color: '#e0e0ff'
+                                color: '#e0e0ff',
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
                             },
                             grid: {
                                 color: 'rgba(255, 255, 255, 0.1)'
@@ -1147,8 +1176,16 @@
                     },
                     plugins: {
                         legend: {
+                            display: false,
                             labels: {
                                 color: '#e0e0ff'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Taxa de acerto: ${context.parsed.y}%`;
+                                }
                             }
                         }
                     }
