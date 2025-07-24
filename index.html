@@ -665,6 +665,106 @@
     </div>
 
     <script>
+        // Dados dos alunos por série
+        const alunosPorSerie = {
+            "9A": [
+                "ÁGATHA NIKOLLE DA SILVA RAMOS",
+                "AMANDA BEATRIZ LEAL MOURAD",
+                "ANNA NICOLY BENVINDO DOS SANTOS",
+                "ARTHUR DOS SANTOS",
+                "BEATRIZ UCHOA DOS SANTOS",
+                "BRUNO EDUARDO NOGUEIRA DE OLIVEIRA",
+                "CARLOS EDUARDO BELMIRO DOS SANTOS",
+                "CHRISTIAN DAVI DE OLIVEIRA",
+                "FILIPE RODRIGUES SANTOS",
+                "GABRIEL ALMEIDA MOSCARDINI",
+                "GIOVANA MOTA VAZ DE JESUS",
+                "GUILHERME DA SILVA GUIMARÃES",
+                "HELOÍSA LEAL DOS REIS",
+                "IAGO ANJOS DE JESUS",
+                "IGNACIO LINS SANTOS",
+                "ISADORA DE SOUZA SILVA",
+                "JOAO VICTOR BATISTA DUARTE",
+                "JULIANA SANTOS LIMA",
+                "MANUELA VITÓRIA LIMA DOS SANTOS",
+                "MIGUEL ALVES OLIVEIRA",
+                "NIKOLAS ANTONIO",
+                "ORIANA JOSE TUAREZ RENGEL",
+                "RAFAELLA VITÓRIA EXPEDITA DE ANDRADE MARQUES",
+                "RAYLAN DE JESUS BARBOSA",
+                "REBECA DOS SANTOS SOUSA",
+                "RICHARD JOSÉ DOS SANTOS",
+                "SARA CRISTINA PASSOS MARTINS",
+                "VANESSA CARDOSO DOS SANTOS",
+                "JULIA DIAS AZEVEDO",
+                "SAMARA HELEN DA SILVA",
+                "LUIS MATHEUS DA SILVA RAMOS",
+                "FABIO HENRIQUE DA SILVA"
+            ],
+            "9B": [
+                "ALEJANDRO VIEIRA LIMA",
+                "ALEX GUSTAVO DA SILVA VIEIRA",
+                "ALLAN BEZERRA DE LIMA",
+                "ARTHUR MARYANO MENDES",
+                "CARLOS EDUARDO OLIVEIRA SABATERRA",
+                "EDUARDA DE SOUSA OLIVEIRA",
+                "GIOVANNA MARTINEZ FERREIRA",
+                "GRAZIELLE VITÓRIA SILVA FIGUEIREDO",
+                "KARINA DE JESUS SANTANA",
+                "LEONARDO JUNIOR ALBUQUERQUE DA SILVA",
+                "MARCOS DE OLIVEIRA CARVALHO",
+                "MARIA EDUARDA SILVA SOUZA",
+                "MOISES DOS SANTOS BOMFIM",
+                "NAHYMÊ VITORIA TAVARES DOS SANTOS",
+                "NICOLAS LUAN MENDES",
+                "PEDRO HENRIQUE ARRABAL MANZARO",
+                "PIETRO RAMON DE PAIVA MAGALHÃES LEITÃO",
+                "TATIANA DA SILVA RODRIGUES",
+                "VITOR HUGO DOMINGOS SANTOS",
+                "WAGNER SILVA MEIRA",
+                "YASMIM ANDRADE DOS SANTOS",
+                "JULIA BARBOSA DA SILVA",
+                "NICOLLY LIRA DA SILVA OLIVEIRA"
+            ],
+            "9C": [
+                "ALEXANDRE SERAFIM JUNIOR",
+                "ANA LUIZA DO NASCIMENTO",
+                "ARTHUR EMANUEL ALMEIDA REIS",
+                "CARLOS AUGUSTO DIAS DE MENDONÇA",
+                "DAPHINE SINDIFER RODRIGUES SILVA",
+                "ELOISA DE OLIVEIRA CARVALHO",
+                "ENZO BAPTISTA MAIA",
+                "EVELLYN ANGELINA CAVALCANTE DE OLIVEIRA",
+                "GABRIEL VICTOR OLIVEIRA SANTOS",
+                "GIOVANNA SOUSA DA SILVA",
+                "GUSTAVO FURLAN GUEDES DA SILVA",
+                "KAUÃ BRYAN MAZARIO BARBEIRO",
+                "KAUAN ALAMBERT GOMES DE SOUSA",
+                "KEMILLY CARVALHO DA FONSECA BRITO",
+                "KLAIVYN WALLAS ARAUJO ESPIRITO SANTO",
+                "LORHANNY CAVALCANTE SANTOS",
+                "MANUELLA LELIS DA SILVA SIMAO",
+                "MONALISA DOS SANTOS BALDUINO",
+                "NATHAN SANTANA MONTEMOR",
+                "NICOLAS PYETRO CASTRO DE ALMEIDA SOUZA",
+                "NICOLLAS JHAMAL DA SILVA ALVES",
+                "SARAH SILVA ROGER",
+                "SERGIO RICARDO SILVA DE SOUZA",
+                "VINICIUS COSTA SILVA",
+                "VITÓRIA SILVA VIEIRA",
+                "FELIPE RITIELLI NEVES DA SILVA",
+                "JAQUELYNE PEREIRA GONCALVES"
+            ]
+        };
+
+        // Mapa de alunos para turmas
+        const alunoTurmaMap = {};
+        for (const turma in alunosPorSerie) {
+            alunosPorSerie[turma].forEach(aluno => {
+                alunoTurmaMap[aluno] = turma;
+            });
+        }
+
         // Função para carregar respostas do localStorage
         function loadResponses() {
             return JSON.parse(localStorage.getItem('quizMitoseResultados')) || [];
@@ -692,19 +792,37 @@
             15: "Ciclo Celular"
         };
         
-        // Popular o seletor de alunos
-        function populateStudentSelect() {
+        // Popular o seletor de alunos com base na turma selecionada
+        function populateStudentSelect(selectedClass) {
             const filterStudent = document.getElementById('filter-student');
+            const selectedStudent = filterStudent.value;
+            
             filterStudent.innerHTML = '<option value="all">Todos os Alunos</option>';
             
-            // Coletar todos os alunos únicos
-            const alunos = [...new Set(allResponses.map(r => r.aluno))];
-            alunos.forEach(aluno => {
-                const option = document.createElement('option');
-                option.value = aluno;
-                option.textContent = aluno;
-                filterStudent.appendChild(option);
-            });
+            if (selectedClass === 'all') {
+                // Adicionar todos os alunos de todas as turmas
+                for (const turma in alunosPorSerie) {
+                    alunosPorSerie[turma].forEach(aluno => {
+                        const option = document.createElement('option');
+                        option.value = aluno;
+                        option.textContent = aluno;
+                        filterStudent.appendChild(option);
+                    });
+                }
+            } else {
+                // Adicionar apenas alunos da turma selecionada
+                alunosPorSerie[selectedClass].forEach(aluno => {
+                    const option = document.createElement('option');
+                    option.value = aluno;
+                    option.textContent = aluno;
+                    filterStudent.appendChild(option);
+                });
+            }
+            
+            // Restaurar o aluno selecionado anteriormente, se possível
+            if (selectedStudent && selectedStudent !== 'all') {
+                filterStudent.value = selectedStudent;
+            }
         }
         
         // Popular as listas de alunos
@@ -715,27 +833,11 @@
                 "9C": document.getElementById('class-9c')
             };
             
-            // Limpar containers
-            for (const cls in classes) {
-                classes[cls].innerHTML = '';
-            }
-            
-            // Agrupar alunos por turma
-            const alunosPorTurma = {};
-            allResponses.forEach(response => {
-                if (!alunosPorTurma[response.turma]) {
-                    alunosPorTurma[response.turma] = [];
-                }
-                if (!alunosPorTurma[response.turma].includes(response.aluno)) {
-                    alunosPorTurma[response.turma].push(response.aluno);
-                }
-            });
-            
             // Preencher as listas
-            for (const turma in alunosPorTurma) {
+            for (const turma in alunosPorSerie) {
                 const container = classes[turma];
                 if (container) {
-                    alunosPorTurma[turma].forEach(aluno => {
+                    alunosPorSerie[turma].forEach(aluno => {
                         const card = document.createElement('div');
                         card.className = 'student-card';
                         card.innerHTML = `
@@ -1167,8 +1269,18 @@
         const sortBy = document.getElementById('sort-by');
         const tabBtns = document.querySelectorAll('.tab-btn');
         
-        filterClass.addEventListener('change', updateDashboard);
-        filterStudent.addEventListener('change', updateDashboard);
+        filterClass.addEventListener('change', function() {
+            populateStudentSelect(this.value);
+            updateDashboard();
+        });
+        
+        filterStudent.addEventListener('change', function() {
+            if (this.value !== 'all' && alunoTurmaMap[this.value]) {
+                document.getElementById('filter-class').value = alunoTurmaMap[this.value];
+            }
+            updateDashboard();
+        });
+        
         sortBy.addEventListener('change', updateDashboard);
         
         // Trocar de aba
@@ -1188,8 +1300,13 @@
         
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            populateStudentSelect();
+            // Preencher listas de alunos
             populateStudentLists();
+            
+            // Inicializar dropdown de alunos com base na série selecionada
+            const initialClass = document.getElementById('filter-class').value;
+            populateStudentSelect(initialClass);
+            
             updateDashboard();
         });
     </script>
